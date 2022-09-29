@@ -1,12 +1,22 @@
 #!/usr/bin/env bash
-# sets up the web servers for the deployment of web_static
-
+# install nginx if not installed already and sets up server for deployment
 sudo apt-get -y update
-sudo apt-get -y upgrade
 sudo apt-get -y install nginx
-sudo mkdir -p /data/web_static/releases/test /data/web_static/shared
-echo "This is a test" | sudo tee /data/web_static/releases/test/index.html
-sudo ln -sf /data/web_static/releases/test/ /data/web_static/current
-sudo chown -hR ubuntu:ubuntu /data/
-sudo sed -i '38i\\tlocation /hbnb_static/ {\n\t\talias /data/web_static/current/;\n\t}\n' /etc/nginx/sites-available/default
-sudo service nginx start
+sudo ufw allow 'Nginx HTTP'
+mkdir -p /data/
+mkdir -p /data/web_static/
+mkdir -p /data/web_static/releases/
+mkdir -p /data/web_static/shared/
+mkdir -p /data/web_static/releases/test/
+echo "<html>
+  <head>
+  </head>
+  <body>
+    Holberton School
+  </body>
+</html> " > /data/web_static/releases/test/index.html
+ln -sf /data/web_static/releases/test/ /data/web_static/current
+sudo chown -R ubuntu:ubuntu /data/
+sed -i '/listen 80 default_server/a location /hbnb_static/ { alias /data/web_static/current/;}' /etc/nginx/sites-available/default
+service nginx restart
+exit 0

@@ -1,69 +1,12 @@
 #!/usr/bin/env bash
-#setup new server
-# check for nginx installation, install if not installed
-if ! nginx -v &>/dev/null ;
-then
-        apt-get -y update
-        apt-get install -y nginx
-fi
+# sets up the web servers for the deployment of web_static
 
-# create required folder and index file
-#create /data folder
-if [ ! -d /data/ ];
-then
-        mkdir /data
-fi
-
-#create subfolders
-if [ ! -d /data/web_static/ ];
-then
-        mkdir -p /data/web_static/
-fi
-
-if [ ! -d /data/web_static/releases/ ];
-then
-        mkdir -p /data/web_static/releases/
-fi
-if [ ! -d /data/web_static/shared/ ];
-then
-        mkdir -p /data/web_static/shared/
-fi
-if [ ! -d /data/web_static/releases/test/ ]
-then
-        mkdir -p /data/web_static/releases/test/
-fi
-printf "
-<html>
-        <head>
-        </head>
-        <body>
-                Holberton School
-        </body>
-</html>" >/data/web_static/releases/test/index.html
-ln -sf /data/web_static/releases/test/ /data/web_static/current
-chown -R ubuntu /data/
-chgrp -R ubuntu /data/
-# create nginx configuration
-printf "server {
-        listen   80 default_server;
-        listen   [::]:80 default_server;
-        root     /var/www/html;
-        index    index.html index.htm;
-        location /hbnb_static {
-                alias /data/web_static/current;
-                index index.html;
-                }
-        location /redirect_me {
-                return 301 https://www.youtube.com;
-        }
-        error_page 404 /custom_404.html;
-        location = /custom_404.html {
-                root /var/www/errors/;
-                internal;
-        }
-        location / {
-                add_header X-Served-By %s;
-        }
-
-}" "$HOSTNAME"> /etc/nginx/sites-available/default
-service nginx restart
+sudo apt-get -y update
+sudo apt-get -y upgrade
+sudo apt-get -y install nginx
+sudo mkdir -p /data/web_static/releases/test /data/web_static/shared
+echo "This is a test" | sudo tee /data/web_static/releases/test/index.html
+sudo ln -sf /data/web_static/releases/test/ /data/web_static/current
+sudo chown -hR ubuntu:ubuntu /data/
+sudo sed -i '38i\\tlocation /hbnb_static/ {\n\t\talias /data/web_static/current/;\n\t}\n' /etc/nginx/sites-available/default
+sudo service nginx start

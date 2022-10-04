@@ -1,8 +1,7 @@
 #!/usr/bin/python3
 """Defines the DBStorage engine."""
 from os import getenv
-from models.base_model import Base
-from models.base_model import BaseModel
+from models.base_model import Base, BaseModel
 from models.amenity import Amenity
 from models.city import City
 from models.place import Place
@@ -10,13 +9,12 @@ from models.review import Review
 from models.state import State
 from models.user import User
 from sqlalchemy import create_engine
-from sqlalchemy.orm import relationship
-from sqlalchemy.orm import scoped_session
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import scoped_session, sessionmaker
 
 
 class DBStorage:
     """Represents a database storage engine.
+
     Attributes:
         __engine (sqlalchemy.Engine): The working SQLAlchemy engine.
         __session (sqlalchemy.Session): The working SQLAlchemy session.
@@ -38,7 +36,9 @@ class DBStorage:
 
     def all(self, cls=None):
         """Query on the curret database session all objects of the given class.
+
         If cls is None, queries all types of objects.
+
         Return:
             Dict of queried classes in the format <class name>.<obj id> = obj.
         """

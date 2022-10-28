@@ -1,36 +1,86 @@
-# Configures a web server for deployment of web_static.
-# Nginx configuration file
+# configure new Server
 
-exec { 'apt-get-update':
-  command => '/usr/bin/env apt-get -y update',
+package { 'nginx':
+  ensure => 'installed',
 }
--> exec {'b':
-  command => '/usr/bin/env apt-get -y install nginx',
+$host=$hostname
+$conf = "server {
+	listen   80 default_server;
+	listen   [::]:80 default_server;
+	root     /var/www/html;
+	index    index.html index.htm;
+	location /redirect_me {
+		return 301 https://www.youtube.com;
+	}
+	location /hbnb_static {
+		alias /data/web_static/current;
+		index index.html;
+	}
+	error_page 404 /custom_404.html;
+	location = /custom_404.html {
+		root /var/www/errors/;
+		internal;
+	}
+	location / {
+                add_header X-Served-By ${host};
+        }
+		
 }
--> exec {'c':
-  command => '/usr/bin/env mkdir -p /data/web_static/releases/test/',
+"
+file {'/data/':
+  ensure => 'directory',
+  group  => 'ubuntu',
+  owner  => 'ubuntu'
 }
--> exec {'d':
-  command => '/usr/bin/env mkdir -p /data/web_static/shared/',
+file {'/data/web_static/':
+  ensure => 'directory',
+  group  => 'ubuntu',
+  owner  => 'ubuntu'
 }
--> exec {'e':
-  command => '/usr/bin/env echo "<html>
- <head>
- </head>
- <body>
-   Holberton School
- </body>
-</html>" > /data/web_static/releases/test/index.html',
+file {'/data/web_static/releases/':
+  ensure => 'directory',
+  owner  => 'ubuntu',
+  group  => 'ubuntu'
 }
--> exec {'f':
-  command => '/usr/bin/env ln -sf /data/web_static/releases/test /data/web_static/current',
+file {'/data/web_static/releases/test/':
+  ensure => 'directory',
+  owner  => 'ubuntu',
+  group  => 'ubuntu'
 }
--> exec {'h':
-  command => '/usr/bin/env sed -i "/listen 80 default_server/a location /hbnb_static/ { alias /data/web_static/current/;}" /etc/nginx/sites-available/default',
+file {'/data/web_static/shared/':
+  ensure => 'directory',
+  owner  => 'ubuntu',
+  group  => 'ubuntu'
 }
--> exec {'i':
-  command => '/usr/bin/env service nginx restart',
+
+file {'/data/web_static/current':
+  ensure => 'link',
+  owner  => 'ubuntu',
+  group  => 'ubuntu',
+  target => '/data/web_static/releases/test/'
 }
--> exec {'g':
-  command => '/usr/bin/env chown -R ubuntu:ubuntu /data',
+file {'/etc/nginx/sites-available/default':
+  ensure  => 'present',
+  content => $conf
+}
+
+file { '/var/www/html/index.html':
+  ensure  => 'present',
+  content => 'Hello World!'
+}
+
+file { '/data/web_static/releases/test/index.html':
+  ensure  => 'present',
+  content => 'Holberton School',
+  owner   => 'ubuntu',
+  group   => 'ubuntu'
+}
+file { '/var/www/errors/custom_404.html':
+  ensure  => 'present',
+  content => 'Ceci n\'est pas une page'
+}
+
+service {'nginx':
+  ensure  => running,
+  require => Package['nginx']
 }

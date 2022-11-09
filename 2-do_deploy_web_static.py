@@ -9,7 +9,7 @@ from fabric.context_managers import lcd
 
 
 env.user = "ubuntu"
-env.hosts = ["3.236.145.87", "3.236.223.114"]
+env.hosts = ["18.210.28.31", "3.236.121.230"]
 
 
 def do_pack():
